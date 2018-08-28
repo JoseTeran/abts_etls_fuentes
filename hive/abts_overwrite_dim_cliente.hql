@@ -2,33 +2,33 @@ use sb_crm;
 set mapred.job.queue.name=crm_resource_pool;
 
 insert overwrite table sb_crm.abts_dim_clientes select 
-	 b.num_cliente as cve_cliente
-	,a.num_cliente_padre as cve_cliente_padre
-	,upper(nvl(a.personalidad,b.personalidad)) as cve_tipo_persona
-	,nvl(a.nombre_hig,b.nom_cliente) as nom_cliente_hig
-	,nvl(a.ap_materno_hig, b.nom_materno) as nom_apellido_materno_hig
-	,nvl(a.ap_paterno_hig,b.nom_paterno) as nom_apellido_paterno_hig
-	,nvl(a.fec_nacimiento,b.fec_nacimien) as fyh_nacimiento_hig
-	,upper(nvl(a.curp,b.curp)) as cve_curp_hig
-	,nvl(a.rfc,b.rfc_del_cliente) as cve_rfc_hig
-	,upper(nvl(a.cod_sexo,b.cod_sexo)) as cve_sexo_hig
-	,upper(nvl(a.cod_edo_civil,b.cod_estcivil)) as cve_estado_civil_hig
-	,b.cod_regmatri as cve_regimen_matrimonial
-	,b.cod_niv_estu as cve_nivel_estudio
-	,b.cod_sit_pers as cve_situacion_persona
-	,b.cod_cond_persona as cve_condicion_persona 
-	,b.cod_act_econ as cve_activ_especifica
-	,b.cod_sec_econ as cve_sector_economico 
-	,b.tip_nat_econ as cve_activ_generica
-	,b.fec_alta as fyh_alta_cliente 
-	,${hiveconf:varCiclo} 
+nvl(b.num_cliente,0) as cve_cliente
+,nvl(a.num_cliente_padre,0) as cve_cliente_padre
+,upper(nvl(a.personalidad,b.personalidad)) as cve_tipo_persona
+,nvl(nvl(a.nombre_hig,b.nom_cliente),'DESCONOCIDO') as nom_cliente_hig
+,nvl(nvl(a.ap_materno_hig, b.nom_materno),'DESCONOCIDO') as nom_apellido_materno_hig
+,nvl(nvl(a.ap_paterno_hig,b.nom_paterno),'DESCONOCIDO') as nom_apellido_paterno_hig
+,nvl(nvl(a.fec_nacimiento,b.fec_nacimien),cast('9999-12-31 00:00:00.0' as timestamp)) as fyh_nacimiento_hig
+,upper(nvl(a.curp,b.curp)) as cve_curp_hig
+,upper(nvl(a.rfc,b.rfc_del_cliente)) as cve_rfc_hig
+,nvl(TRIM(nvl(a.cod_sexo,b.cod_sexo)),'X') as cve_sexo_hig
+,upper(nvl(a.cod_edo_civil,b.cod_estcivil)) as cve_estado_civil_hig
+,nvl(TRIM(b.cod_regmatri),'X') as cve_regimen_matrimonial
+,nvl(TRIM(b.cod_niv_estu),'000') as cve_nivel_estudio
+,nvl(TRIM(b.cod_sit_pers),'000') as cve_situacion_persona
+,nvl(TRIM(b.cod_cond_persona),'XXX') as cve_condicion_persona 
+,nvl(TRIM(b.cod_act_econ),'00000000') as cve_activ_especifica
+,nvl(TRIM(b.cod_sec_econ),'000') as cve_sector_economico 
+,nvl(TRIM(b.tip_nat_econ),'000') as cve_activ_generica
+,nvl(b.fec_alta,cast('9999-12-31 00:00:00.0' as timestamp)) as fyh_alta_cliente 
+,${hiveconf:varCiclo} 
 from 
 	dm_macrobase_hist.v_cdd_maestra_demograficos_dl a right outer join 
 	af_macrobase_hist.fac_ad_personas b on b.num_cliente=a.num_cliente
 where 
 	a.data_date_part=${hiveconf:varCiclo} and b.data_date_part='2018-07-20';
 
---dim_geograficos
+
 insert overwrite table sb_crm.abts_dim_geograficos select 
 	 nvl(b.num_cliente,0) as cve_cliente
 	,nvl(b.cod_pais_nac,'000') as cve_pais_nacimiento
