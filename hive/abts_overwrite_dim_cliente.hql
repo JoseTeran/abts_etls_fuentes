@@ -4,13 +4,25 @@ set mapred.job.queue.name=crm_resource_pool;
 insert overwrite table sb_crm.abts_dim_clientes select 
 nvl(b.num_cliente,0) as cve_cliente
 ,nvl(a.num_cliente_padre,0) as cve_cliente_padre
-,upper(nvl(a.personalidad,b.personalidad)) as cve_tipo_persona
+,case 
+when upper(nvl(a.personalidad,b.personalidad))='NULL' then 'X' 
+when upper(nvl(a.personalidad,b.personalidad))='' then 'X'
+when upper(nvl(a.personalidad,b.personalidad)) is null then 'X' 
+else upper(nvl(a.personalidad,b.personalidad)) end as cve_tipo_persona
 ,nvl(nvl(a.nombre_hig,b.nom_cliente),'DESCONOCIDO') as nom_cliente_hig
 ,nvl(nvl(a.ap_materno_hig, b.nom_materno),'DESCONOCIDO') as nom_apellido_materno_hig
 ,nvl(nvl(a.ap_paterno_hig,b.nom_paterno),'DESCONOCIDO') as nom_apellido_paterno_hig
 ,nvl(nvl(a.fec_nacimiento,b.fec_nacimien),cast('9999-12-31 00:00:00.0' as timestamp)) as fyh_nacimiento_hig
-,upper(nvl(a.curp,b.curp)) as cve_curp_hig
-,upper(nvl(a.rfc,b.rfc_del_cliente)) as cve_rfc_hig
+,case 
+when trim(upper(nvl(a.curp,b.curp)))='NULL' then 'DESCONOCIDO' 
+when trim(upper(nvl(a.curp,b.curp)))='' then 'DESCONOCIDO'
+when trim(upper(nvl(a.curp,b.curp))) is null then 'DESCONOCIDO' 
+else trim(upper(nvl(a.curp,b.curp))) end as cve_curp_hig
+,case 
+when trim(upper(nvl(a.rfc,b.rfc_del_cliente)))='NULL' then 'DESCONOCIDO' 
+when trim(upper(nvl(a.rfc,b.rfc_del_cliente)))='' then 'DESCONOCIDO'
+when trim(upper(nvl(a.rfc,b.rfc_del_cliente))) is null then 'DESCONOCIDO' 
+else trim(upper(nvl(a.rfc,b.rfc_del_cliente))) end as cve_rfc_hig
 ,nvl(TRIM(nvl(a.cod_sexo,b.cod_sexo)),'X') as cve_sexo_hig
 ,upper(nvl(a.cod_edo_civil,b.cod_estcivil)) as cve_estado_civil_hig
 ,nvl(TRIM(b.cod_regmatri),'X') as cve_regimen_matrimonial
